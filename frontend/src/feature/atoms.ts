@@ -1,7 +1,7 @@
 import {atom} from "jotai";
 
 
-export const gameFieldSizeAtom = atom(20);
+export const gameFieldSizeAtom = atom(30);
 export const foodSizeMaxAtom = atom(3);
 
 export type PaintedCell = {
@@ -30,5 +30,6 @@ export type Crab = {
 }
 export const crabsAtom = atom<Crab[]>([
     {id: "test001", direction: "N", x: 10, y: 10, hue: 370},
-    {id: "test002", direction: "N", x: 15, y: 3, hue: 280}
+    {id: "test002", direction: "N", x: 15, y: 3, hue: 280},
+    {id: "test003", direction: "S", x: 5, y: 15, hue: 190},
 ]);
