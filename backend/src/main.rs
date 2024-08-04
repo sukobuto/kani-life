@@ -51,12 +51,6 @@ struct GameManagementState {
     state: GameState,
 }
 
-// #[derive(Debug)]
-// struct WebSocketState {
-//     /// ゲームプロセッサから WebSocket Message を受け取るためのレシーバ
-//     rx: watch::Receiver<Message>,
-// }
-
 #[derive(Debug, Clone)]
 struct CommanderState {
     /// ゲームプロセッサにコマンドを送信するためのセンダー
@@ -65,16 +59,11 @@ struct CommanderState {
 
 #[shuttle_runtime::main]
 async fn main() -> ShuttleAxum {
-    // let (mut pub_tx, pub_rx) = watch::channel(Message::Text("{}".to_string()));
     let (command_tx, command_rx) = mpsc::channel::<GameCommandCase>(100);
 
     let game_management_state = Arc::new(Mutex::new(GameManagementState {
         state: GameState { count: 0 },
     }));
-
-    // let websocket_state = Arc::new(Mutex::new(WebSocketState {
-    //     rx: pub_rx,
-    // }));
 
     let commander_state = Arc::new(Mutex::new(CommanderState {
         tx: command_tx.clone(),
@@ -90,7 +79,6 @@ async fn main() -> ShuttleAxum {
     let router = Router::new()
         .route("/api/command", post(post_command))
         .with_state(commander_state)
-        // .route("/ws", get(websocket_handler)).with_state(websocket_state)
         .nest_service("/", ServeDir::new("static"))
         .layer(socket_layer);
 
@@ -193,28 +181,3 @@ fn command_processor(
         }
     });
 }
-
-// async fn websocket_handler(
-//     ws: WebSocketUpgrade,
-//     State(state): State<Arc<Mutex<WebSocketState>>>,
-// ) -> impl IntoResponse {
-//     ws.on_upgrade(|socket| websocket(socket, state))
-// }
-//
-// async fn websocket(stream: WebSocket, state: Arc<Mutex<WebSocketState>>) {
-//     let (mut sender, mut _receiver) = stream.split();
-//
-//     // ゲームの状況の更新を受信するためのレシーバ
-//     let mut rx = {
-//         let mut state = state.lock().await;
-//         state.rx.clone()
-//     };
-//
-//     // ゲームの状況をブラウザに送信するループ
-//     while let Ok(()) = rx.changed().await {
-//         let msg = rx.borrow().clone();
-//         if sender.send(msg).await.is_err() {
-//             break;
-//         }
-//     }
-// }
