@@ -7,4 +7,14 @@ export default defineConfig({
         outDir: '../backend/static'
     },
     plugins: [react()],
+    server: {
+        proxy: {
+            '/api': 'http://localhost:8000',
+            '/socket.io': {
+                target: 'ws://localhost:8000',
+                ws: true,
+                rewriteWsOrigin: true,
+            },
+        },
+    }
 })

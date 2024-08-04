@@ -2,6 +2,7 @@ import styled from "styled-components";
 import {range} from "../feature/helper.ts";
 import {useAtomValue} from "jotai";
 import {
+    countAtom,
     type Crab,
     crabsAtom,
     foodsAtom,
@@ -12,6 +13,7 @@ import {
 import {useRandomPaints} from "../feature/use-random-paints.ts";
 import {useRandomFoods} from "../feature/use-random-foods.ts";
 import {useRandomCommand} from "../feature/use-random-command.ts";
+import {useWebSocket} from "../feature/use-websocket.ts";
 
 type GridLineInfo = {
     lineNo: number
@@ -27,7 +29,9 @@ function GameField() {
     useRandomPaints()
     useRandomFoods()
     useRandomCommand()
+    useWebSocket()
     const gameFieldSize = useAtomValue(gameFieldSizeAtom)
+    const count = useAtomValue(countAtom)
     const lines: GridLineInfo[] = range(1, gameFieldSize).map((lineNo) => {
         return {
             lineNo,
@@ -54,9 +58,20 @@ function GameField() {
                     <Crab key={crab.id} info={crab}/>
                 ))}
             </CrabLayer>
+            <Counter>{count}</Counter>
         </GameFieldContainer>
     )
 }
+
+const Counter = styled.div`
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 1.5rem;
+`;
 
 type CrabGeometry = { left: string, top: string, transform: string }
 

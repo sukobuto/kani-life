@@ -33,3 +33,5 @@ export const crabsAtom = atom<Crab[]>([
     {id: "test002", direction: "N", x: 15, y: 3, hue: 280},
     {id: "test003", direction: "S", x: 5, y: 15, hue: 190},
 ]);
+
+export const countAtom = atom(0);
