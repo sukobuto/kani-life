@@ -4,7 +4,25 @@
 
 Web 画面はゲーム状況の表示だけで、API でコマンドを送信することで自キャラ（カニ）を操作する。
 
-# todo
+## dev
+
+backend を起動 (0.0.0.0:8000)
+```
+cd backend
+cargo run
+```
+
+frontend を起動 (起動ポートは標準出力される)
+```
+cd frontend
+npm install
+npm run dev
+```
+
+frontend の起動URLをブラウザで開くとゲーム画面が表示される。
+コマンドは backend に対して直接送信すればOK。
+
+## todo
 
 - [ ] ゲーム画面(frontend)の実装
     - [x] 盤面の描画

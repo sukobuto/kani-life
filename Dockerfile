@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY backend .
 RUN cargo build --release \
-    && mv ./target/x86_64-unknown-linux-musl/release/kani-life /app/kani-life-backend
+    && mv ./target/release/kani-life /app/kani-life-backend
 
 # frontend (vite react) のビルドを行う
 FROM node:20 as frontend_builder
