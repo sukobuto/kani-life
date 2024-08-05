@@ -1,5 +1,5 @@
 # まず backend (rust axum) のビルドを行う
-FROM --platform=$BUILDPLATFORM messense/rust-musl-cross:x86_64-musl as backend_builder
+FROM rust:1.80 as backend_builder
 
 WORKDIR /app
 
