@@ -4,7 +4,6 @@ use axum::{
     extract::{Json, State},
     Router,
 };
-use shuttle_axum::ShuttleAxum;
 use socketioxide::layer::SocketIoLayer;
 use socketioxide::{extract::SocketRef, SocketIo};
 use std::{sync::Arc, time::Duration};
@@ -57,8 +56,8 @@ struct CommanderState {
     tx: mpsc::Sender<GameCommandCase>,
 }
 
-#[shuttle_runtime::main]
-async fn main() -> ShuttleAxum {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (command_tx, command_rx) = mpsc::channel::<GameCommandCase>(100);
 
     let game_management_state = Arc::new(Mutex::new(GameManagementState {
@@ -75,14 +74,17 @@ async fn main() -> ShuttleAxum {
 
     command_processor(game_management_state.clone(), command_rx, socket_io);
 
-    // ServeDir falls back to serve index.html when requesting a directory
-    let router = Router::new()
+    let app = Router::new()
         .route("/api/command", post(post_command))
         .with_state(commander_state)
         .nest_service("/", ServeDir::new("static"))
         .layer(socket_layer);
 
-    Ok(router.into())
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
+    println!("Listening on: {}", listener.local_addr().unwrap());
+    axum::serve(listener, app).await.unwrap();
+
+    Ok(())
 }
 
 fn socket_layer(

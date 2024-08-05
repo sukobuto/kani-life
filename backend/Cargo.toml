@@ -12,5 +12,5 @@ serde_json = "1.0.122"
 shuttle-axum = "0.47.0"
 shuttle-runtime = "0.47.0"
 socketioxide = "0.14.0"
-tokio = "1.28.2"
+tokio = { version = "1.28.2", features = ["net"] }
 tower-http = { version = "0.5.0", features = ["fs"] }
