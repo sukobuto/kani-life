@@ -18,7 +18,7 @@ RUN npm install \
     && mv ./dist /app/kani-life-frontend
 
 # 本番環境用のイメージを作成する
-FROM scratch
+FROM rust:1.80
 WORKDIR /app
 # backend binary
 COPY --from=backend_builder /app/kani-life-backend /app/kani-life-backend
