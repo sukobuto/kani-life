@@ -33,26 +33,26 @@ export const useRandomCommand = () => {
 function canMoveRight(gameFieldSize: number, crab: Crab) {
     switch (crab.direction) {
         case "N":
-            return crab.x < gameFieldSize;
+            return crab.position.x < gameFieldSize;
         case "E":
-            return crab.y < gameFieldSize;
+            return crab.position.y < gameFieldSize;
         case "S":
-            return crab.x > 1;
+            return crab.position.x > 1;
         case "W":
-            return crab.y > 1;
+            return crab.position.y > 1;
     }
 }
 
 function moveRight(crab: Crab): Crab {
     switch (crab.direction) {
         case "N":
-            return {...crab, x: crab.x + 1};
+            return {...crab, position: {...crab.position, x: crab.position.x + 1}};
         case "E":
-            return {...crab, y: crab.y + 1};
+            return {...crab, position: {...crab.position, y: crab.position.y + 1}};
         case "S":
-            return {...crab, x: crab.x - 1};
+            return {...crab, position: {...crab.position, x: crab.position.x - 1}};
         case "W":
-            return {...crab, y: crab.y - 1};
+            return {...crab, position: {...crab.position, y: crab.position.y - 1}};
     }
 }
 

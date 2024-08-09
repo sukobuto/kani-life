@@ -9,29 +9,32 @@ export type PaintedCell = {
     y: number
     color: string
 }
-export const paintedCellsAtom = atom<PaintedCell[]>([{y: 1, x: 1, color: "#33FFFF55"}]);
+export const paintedCellsAtom = atom<PaintedCell[]>([]);
 
 
 export type Food = {
     id: string
-    x: number
-    y: number
+    position: {
+        x: number
+        y: number
+    }
     size: number
 }
-export const foodsAtom = atom<Food[]>([{id: "test001", y: 1, x: 1, size: 1}]);
+export const foodsAtom = atom<Food[]>([]);
 
 
 export type Crab = {
-    id: string
-    direction: "N" | "E" | "S" | "W"
-    x: number
-    y: number
+    name: string
     hue: number
+    point: number
+    direction: "N" | "E" | "S" | "W"
+    position: {
+        x: number
+        y: number
+    }
 }
 export const crabsAtom = atom<Crab[]>([
-    {id: "test001", direction: "N", x: 10, y: 10, hue: 370},
-    {id: "test002", direction: "N", x: 15, y: 3, hue: 280},
-    {id: "test003", direction: "S", x: 5, y: 15, hue: 190},
+    // {name: "test001", hue: 370, point: 0, direction: "N", position: {x: 10, y: 10}},
+    // {name: "test002", hue: 280, point: 0, direction: "N", position: {x: 15, y: 3}},
+    // {name: "test003", hue: 190, point: 0, direction: "S", position: {x: 5, y: 15}},
 ]);
-
-export const countAtom = atom(0);

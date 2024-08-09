@@ -1,11 +1,13 @@
 import {useSetAtom} from 'jotai';
-import {countAtom} from "./atoms.ts";
+import {Crab, crabsAtom, Food, foodsAtom, gameFieldSizeAtom} from "./atoms.ts";
 import {useEffect, useState} from "react";
 import {socket} from "./socket.ts";
 
 
 type State = {
-    count: number
+    size: number
+    crabs: Crab[]
+    foods: Food[]
 }
 
 export type WebSocket = {
@@ -14,7 +16,9 @@ export type WebSocket = {
 
 export const useWebSocket = (): WebSocket => {
     const [isConnected, setIsConnected] = useState(socket.connected);
-    const setCount = useSetAtom(countAtom);
+    const setGameFieldSize = useSetAtom(gameFieldSizeAtom);
+    const setFoods = useSetAtom(foodsAtom);
+    const setCrabs = useSetAtom(crabsAtom);
 
     useEffect(() => {
         function onConnect() {
@@ -30,7 +34,9 @@ export const useWebSocket = (): WebSocket => {
 
         function onNewState(state: State) {
             console.log('socket state', state)
-            setCount(state.count);
+            setGameFieldSize(state.size)
+            setFoods(state.foods)
+            setCrabs(state.crabs)
         }
 
         socket.on('connect', onConnect)

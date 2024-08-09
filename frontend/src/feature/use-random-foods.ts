@@ -14,8 +14,8 @@ export const useRandomFoods = () => {
             if (foods.length >= 5) {
                 return;
             }
-            const y = Math.floor(Math.random() * gameFieldSize) + 1;
-            const x = Math.floor(Math.random() * gameFieldSize) + 1;
+            const y = Math.floor(Math.random() * gameFieldSize);
+            const x = Math.floor(Math.random() * gameFieldSize);
             const size = Math.floor(Math.random() * 3) + 1;
             const id = uuidv4();
             // todo 既存の餌と重ならないようにする

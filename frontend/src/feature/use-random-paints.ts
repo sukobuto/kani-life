@@ -9,8 +9,8 @@ export const useRandomPaints = () => {
 
     useEffect(() => {
         const randomPaint = () => {
-            const lineNo = Math.floor(Math.random() * gameFieldSize) + 1;
-            const cellNo = Math.floor(Math.random() * gameFieldSize) + 1;
+            const lineNo = Math.floor(Math.random() * gameFieldSize);
+            const cellNo = Math.floor(Math.random() * gameFieldSize);
             const color = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0")}12`;
             setPaintedCells((prev) => {
                 // 最大50個まで描画する

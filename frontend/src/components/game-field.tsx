@@ -2,7 +2,6 @@ import styled from "styled-components";
 import {range} from "../feature/helper.ts";
 import {useAtomValue} from "jotai";
 import {
-    countAtom,
     type Crab,
     crabsAtom,
     foodsAtom,
@@ -11,8 +10,6 @@ import {
     paintedCellsAtom
 } from "../feature/atoms.ts";
 import {useRandomPaints} from "../feature/use-random-paints.ts";
-import {useRandomFoods} from "../feature/use-random-foods.ts";
-import {useRandomCommand} from "../feature/use-random-command.ts";
 import {useWebSocket} from "../feature/use-websocket.ts";
 
 type GridLineInfo = {
@@ -27,16 +24,13 @@ type GridCellInfo = {
 
 function GameField() {
     useRandomPaints()
-    useRandomFoods()
-    useRandomCommand()
     useWebSocket()
     const gameFieldSize = useAtomValue(gameFieldSizeAtom)
-    const count = useAtomValue(countAtom)
-    const lines: GridLineInfo[] = range(1, gameFieldSize).map((lineNo) => {
+    const lines: GridLineInfo[] = range(0, gameFieldSize - 1).map((lineNo) => {
         return {
             lineNo,
             cells:
-                range(1, gameFieldSize).map((cellNo) => {
+                range(0, gameFieldSize - 1).map((cellNo) => {
                     return {
                         cellNo,
                     }
@@ -55,23 +49,12 @@ function GameField() {
             ))}
             <CrabLayer>
                 {crabs.map(crab => (
-                    <Crab key={crab.id} info={crab}/>
+                    <Crab key={crab.name} info={crab}/>
                 ))}
             </CrabLayer>
-            <Counter>{count}</Counter>
         </GameFieldContainer>
     )
 }
-
-const Counter = styled.div`
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 5px;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    font-size: 1.5rem;
-`;
 
 type CrabGeometry = { left: string, top: string, transform: string }
 
@@ -109,7 +92,7 @@ function GridCell({lineNo, cellNo}: GridCellProps) {
     const paintedCells = useAtomValue(paintedCellsAtom)
     const color = paintedCells
         .find(pc => pc.x == cellNo && pc.y == lineNo)
-    const food = useAtomValue(foodsAtom).find((f) => f.y == lineNo && f.x == cellNo)
+    const food = useAtomValue(foodsAtom).find((f) => f.position.y == lineNo && f.position.x == cellNo)
     return (
         <GridCellInner $gameFieldSize={gameFieldSize} style={{backgroundColor: color?.color}}>
             {food && (
@@ -163,7 +146,8 @@ function Crab({info}: CrabProps) {
     const baseColor = `hsl(${info.hue}deg 77% 42%)`
     const highlight = `hsl(${info.hue}deg 72% 52%)`
     return (
-        <CrabBase $gameFieldSize={gameFieldSize} style={crabGeometry(info.direction, info.x, info.y, gameFieldSize)}>
+        <CrabBase $gameFieldSize={gameFieldSize}
+                  style={crabGeometry(info.direction, info.position.x, info.position.y, gameFieldSize)}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
                 <path fill={darker}
                       d="M6.96 20.637c.068.639-.543 1.228-1.368 1.315-.824.089-1.547-.357-1.615-.995-.068-.639.544-1.227 1.368-1.314.824-.089 1.547.356 1.615.994zm2.087 2.717c.125.818-1.756 2.544-2.576 2.669-.819.125-1.584-.438-1.708-1.257-.125-.818.58-1.14 1.398-1.265.819-.124 2.761-.965 2.886-.147zm1.783 2.104c.173.81-1.628 3.927-2.438 4.1-.811.173-1.645.146-1.817-.665-.173-.81.306-1.688 1.116-1.861.81-.174 2.966-2.384 3.139-1.574zm3.853.858c.165.811-1.338 4.354-2.15 4.519-.812.165-1.439.451-1.604-.36-.165-.812.261-1.975 1.006-2.58.644-.523 2.584-2.39 2.748-1.579z"/>
