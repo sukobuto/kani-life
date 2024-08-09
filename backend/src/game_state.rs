@@ -63,6 +63,10 @@ impl GameState {
     }
 
     fn spawn(&mut self, param: &SpawnParam) -> CommandResponse {
+        // すでに同じ名前のカニがいる場合はエラー
+        if self.crabs.iter().any(|c| c.name == param.name) {
+            return CommandResponse::crab_already_exists();
+        }
         let keep_out: Vec<Position> = self
             .crabs
             .iter()

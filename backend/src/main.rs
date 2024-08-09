@@ -125,7 +125,6 @@ fn command_processor(
             callback_tx,
         }) = command_rx.recv().await
         {
-            println!("Received command: {:?}", command);
             let mut state = game_state.lock().await;
             let response = state.proc_command(&command);
             let mutated = response.mutated;
@@ -160,7 +159,6 @@ fn game_cycle(command_tx: mpsc::Sender<GameCommandCase>) {
             let response = response_rx.await;
             match response {
                 Ok(response) => {
-                    println!("Received response: {:?}", response);
                     if response.wait > 0 {
                         sleep(Duration::from_millis(response.wait)).await;
                     }

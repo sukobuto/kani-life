@@ -56,6 +56,11 @@ pub(crate) struct Position {
 }
 
 impl Position {
+    #[cfg(test)]
+    pub(crate) fn new(x: i32, y: i32) -> Position {
+        Position { x, y }
+    }
+
     pub(crate) fn random(width: u32, height: u32) -> Position {
         use rand::Rng;
         Position {

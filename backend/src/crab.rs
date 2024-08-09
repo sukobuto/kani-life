@@ -5,12 +5,12 @@ use crate::token::Token;
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Crab {
-    name: String,
-    pub token: Token,
+    pub(crate) name: String,
+    pub(crate) token: Token,
     hue: f32,
-    pub point: i32,
+    pub(crate) point: i32,
     direction: Direction,
-    pub position: Position,
+    pub(crate) position: Position,
 }
 
 impl Crab {
@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn test_turn() {
-        let crab = Crab {
+        let mut crab = Crab {
             name: "test".to_string(),
             token: Token::new(),
             hue: 0.0,
@@ -82,11 +82,9 @@ mod tests {
             direction: Direction::N,
             position: Position::new(0, 0),
         };
-        let crab_turned_right = crab.turn(Side::Right);
-        assert_eq!(crab_turned_right.direction, Direction::E);
-        assert_eq!(crab_turned_right.position, Position::new(0, 0));
-        let crab_turned_left = crab.turn(Side::Left);
-        assert_eq!(crab_turned_left.direction, Direction::W);
+        crab.turn_mut(Side::Right);
+        assert_eq!(crab.direction, Direction::E);
+        assert_eq!(crab.position, Position::new(0, 0));
     }
 
     #[test]
