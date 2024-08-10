@@ -82,6 +82,10 @@ impl GameState {
         self.crabs.iter_mut().find(|c| c.get_token() == *token)
     }
 
+    fn find_crab(&self, token: &Token) -> Option<&Crab> {
+        self.crabs.iter().find(|c| c.get_token() == *token)
+    }
+
     fn turn(&mut self, param: &TurnParam) -> CommandResponse {
         let Some(crab) = self.find_crab_mut(&param.token) else {
             return CommandResponse::crab_not_found();
@@ -92,25 +96,146 @@ impl GameState {
 
     fn r#move(&mut self, param: &MoveParam) -> CommandResponse {
         let size = self.size as i32;
-        let Some(crab) = self.find_crab_mut(&param.token) else {
+        let Some(crab) = self.find_crab(&param.token) else {
             return CommandResponse::crab_not_found();
         };
-        // todo 別のカニがいる場合の処理
-        if crab.r#move(param.side).position.is_inset(size, size) {
-            crab.move_mut(param.side);
-            // todo ごはんがあった場合の処理
-            CommandResponse::r#move(MoveResult {
-                success: true,
-                // todo ポイントの計算
-                point: 0,
-                total_point: crab.point,
-            })
-        } else {
-            CommandResponse::r#move(MoveResult {
+        let new_pos = crab.r#move(param.side).position;
+        if !new_pos.is_inset(size, size) || self.find_crab_by_position(&new_pos).is_some() {
+            return CommandResponse::r#move(MoveResult {
                 success: false,
                 point: 0,
                 total_point: crab.point,
-            })
+            });
         }
+        let crab = self.find_crab_mut(&param.token).unwrap();
+        crab.move_mut(param.side);
+        // todo ごはんがあった場合の処理
+        CommandResponse::r#move(MoveResult {
+            success: true,
+            // todo ポイントの計算
+            point: 0,
+            total_point: crab.point,
+        })
+    }
+
+    fn find_crab_by_position(&self, position: &Position) -> Option<&Crab> {
+        self.crabs.iter().find(|c| c.position == *position)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::command::CommandResult;
+    use crate::geometry::{Direction, Side};
+
+    #[test]
+    fn test_crab_collides_to_wall() {
+        let token = Token::new();
+        //  +----+----+
+        //  | 🦀 |    |
+        //  +----+----+
+        //  |    |    |
+        //  +----+----+
+        let mut state = GameState {
+            size: 2,
+            crabs: vec![Crab {
+                name: "player".to_string(),
+                token,
+                hue: 0.0,
+                point: 0,
+                direction: Direction::N,
+                position: Position::new(0, 0),
+            }],
+            foods: vec![],
+        };
+
+        // 右に一度移動できる
+        let command = Command::PlayerCommand(PlayerCommand::Move(MoveParam {
+            token,
+            side: Side::Right,
+        }));
+        let response = state.proc_command(&command);
+        assert_eq!(
+            response.result,
+            CommandResult::Move(MoveResult {
+                success: true,
+                point: 0,
+                total_point: 0,
+            })
+        );
+        assert_eq!(state.crabs[0].position, Position::new(1, 0));
+        // 二度目は移動できない（壁にぶつかる）
+        let response = state.proc_command(&command);
+        assert_eq!(
+            response.result,
+            CommandResult::Move(MoveResult {
+                success: false,
+                point: 0,
+                total_point: 0,
+            })
+        );
+        assert_eq!(state.crabs[0].position, Position::new(1, 0));
+    }
+
+    #[test]
+    fn test_crab_collides_to_other_crab() {
+        let token = Token::new();
+        //  +----+----+----+
+        //  | 🦀 |    | 🦀 |
+        //  +----+----+----+
+        //  |    |    |    |
+        //  +----+----+----+
+        //  |    |    |    |
+        //  +----+----+----+
+        let mut state = GameState {
+            size: 3,
+            crabs: vec![
+                Crab {
+                    name: "player".to_string(),
+                    token,
+                    hue: 0.0,
+                    point: 0,
+                    direction: Direction::N,
+                    position: Position::new(0, 0),
+                },
+                Crab {
+                    name: "other".to_string(),
+                    token: Token::new(),
+                    hue: 0.0,
+                    point: 0,
+                    direction: Direction::N,
+                    position: Position::new(2, 0),
+                },
+            ],
+            foods: vec![],
+        };
+
+        // 右に一度移動できる
+        let command = Command::PlayerCommand(PlayerCommand::Move(MoveParam {
+            token,
+            side: Side::Right,
+        }));
+        let response = state.proc_command(&command);
+        assert_eq!(
+            response.result,
+            CommandResult::Move(MoveResult {
+                success: true,
+                point: 0,
+                total_point: 0,
+            })
+        );
+        assert_eq!(state.crabs[0].position, Position::new(1, 0));
+        // 二度目は移動できない（他カニにぶつかる）
+        let response = state.proc_command(&command);
+        assert_eq!(
+            response.result,
+            CommandResult::Move(MoveResult {
+                success: false,
+                point: 0,
+                total_point: 0,
+            })
+        );
+        assert_eq!(state.crabs[0].position, Position::new(1, 0));
     }
 }

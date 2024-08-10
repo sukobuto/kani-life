@@ -8,7 +8,7 @@ pub(crate) enum Command {
 }
 
 use player_command::{MoveResult, PaintResult, ScanResult, SpawnResult};
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(tag = "type")]
 pub(crate) enum CommandResult {
     Ok,

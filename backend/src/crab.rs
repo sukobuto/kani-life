@@ -7,9 +7,9 @@ use crate::token::Token;
 pub(crate) struct Crab {
     pub(crate) name: String,
     pub(crate) token: Token,
-    hue: f32,
+    pub(crate) hue: f32,
     pub(crate) point: i32,
-    direction: Direction,
+    pub(crate) direction: Direction,
     pub(crate) position: Position,
 }
 

@@ -19,7 +19,7 @@ pub(crate) struct SpawnParam {
     pub hue: f32,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct SpawnResult {
     pub token: Token,
@@ -31,13 +31,13 @@ pub(crate) struct ScanParam {
     pub token: Token,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ScanResult {
     pub what_you_can_see: WhatYouCanSee,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub(crate) enum WhatYouCanSee {
     Food,
     Crab,
@@ -58,7 +58,7 @@ pub(crate) struct MoveParam {
     pub side: Side,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct MoveResult {
     /// 移動に成功したか
@@ -75,7 +75,7 @@ pub(crate) struct PaintParam {
     pub token: Token,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct PaintResult {
     pub your_paints: Vec<Position>,
