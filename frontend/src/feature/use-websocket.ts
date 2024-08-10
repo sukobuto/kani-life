@@ -1,13 +1,13 @@
 import {useSetAtom} from 'jotai';
-import {Crab, crabsAtom, Food, foodsAtom, gameFieldSizeAtom} from "./atoms.ts";
+import {Crab, crabsAtom, Food, foodsAtom, gameFieldSizeAtom, Paint, paintedCellsAtom} from "./atoms.ts";
 import {useEffect, useState} from "react";
 import {socket} from "./socket.ts";
-
 
 type State = {
     size: number
     crabs: Crab[]
     foods: Food[]
+    paints: Paint[]
 }
 
 export type WebSocket = {
@@ -19,6 +19,7 @@ export const useWebSocket = (): WebSocket => {
     const setGameFieldSize = useSetAtom(gameFieldSizeAtom);
     const setFoods = useSetAtom(foodsAtom);
     const setCrabs = useSetAtom(crabsAtom);
+    const setPaintedCells = useSetAtom(paintedCellsAtom);
 
     useEffect(() => {
         function onConnect() {
@@ -37,6 +38,11 @@ export const useWebSocket = (): WebSocket => {
             setGameFieldSize(state.size)
             setFoods(state.foods)
             setCrabs(state.crabs)
+            const paintedCells: Record<string, string> = state.paints.reduce((acc: Record<string, string>, p) => {
+                acc[`${p.position.x},${p.position.y}`] = `hsla(${p.hue}, 70%, 30%, 0.5)`
+                return acc
+            }, {})
+            setPaintedCells(paintedCells)
         }
 
         socket.on('connect', onConnect)

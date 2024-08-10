@@ -1,11 +1,13 @@
 import {useAtomValue, useSetAtom} from 'jotai';
-import {gameFieldSizeAtom, paintedCellsAtom} from "./atoms.ts";
+import {decoratedCellsAtom, gameFieldSizeAtom} from "./atoms.ts";
 import {useEffect} from "react";
 
 
-export const useRandomPaints = () => {
+export const useDecoration = () => {
     const gameFieldSize = useAtomValue(gameFieldSizeAtom);
-    const setPaintedCells = useSetAtom(paintedCellsAtom);
+    const setPaintedCells = useSetAtom(decoratedCellsAtom);
+
+    const maxCells = gameFieldSize * gameFieldSize * 0.15;
 
     useEffect(() => {
         const randomPaint = () => {
@@ -14,7 +16,14 @@ export const useRandomPaints = () => {
             const color = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0")}12`;
             setPaintedCells((prev) => {
                 // 最大50個まで描画する
-                return [{y: lineNo, x: cellNo, color}, ...prev.slice(0, 48)];
+                const keys = Object.keys(prev);
+                if (keys.length >= maxCells) {
+                    delete prev[keys[0]];
+                }
+                return {
+                    ...prev,
+                    [`${cellNo},${lineNo}`]: color
+                };
             });
         };
 

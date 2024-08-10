@@ -70,7 +70,7 @@ impl Position {
     }
 
     /// 向いている方向に対し横(side)方向に移動する
-    pub(crate) fn r#move(&self, direction: Direction, side: Side) -> Position {
+    pub(crate) fn walk(&self, direction: Direction, side: Side) -> Position {
         match side {
             Side::Right => self.move_right(direction),
             Side::Left => self.move_left(direction),
@@ -89,7 +89,7 @@ impl Position {
                 ..*self
             },
             Direction::S => Position {
-                y: self.y - 1,
+                y: self.y + 1,
                 ..*self
             },
             Direction::W => Position {

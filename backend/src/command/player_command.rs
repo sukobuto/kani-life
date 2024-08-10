@@ -8,7 +8,7 @@ pub(crate) enum PlayerCommand {
     Spawn(SpawnParam),
     Scan(ScanParam),
     Turn(TurnParam),
-    Move(MoveParam),
+    Walk(WalkParam),
     Paint(PaintParam),
 }
 
@@ -53,14 +53,14 @@ pub(crate) struct TurnParam {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct MoveParam {
+pub(crate) struct WalkParam {
     pub token: Token,
     pub side: Side,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct MoveResult {
+pub(crate) struct WalkResult {
     /// 移動に成功したか
     pub success: bool,
     /// ゲットしたごはんポイント
@@ -78,5 +78,7 @@ pub(crate) struct PaintParam {
 #[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct PaintResult {
+    pub success: bool,
     pub your_paints: Vec<Position>,
+    pub total_point: i32,
 }

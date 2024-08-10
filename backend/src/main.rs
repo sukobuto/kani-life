@@ -3,6 +3,7 @@ mod crab;
 mod food;
 mod game_state;
 mod geometry;
+mod paint;
 mod token;
 
 use crate::command::{

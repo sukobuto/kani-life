@@ -7,7 +7,7 @@ pub(crate) enum Command {
     GameCycleCommand(game_cycle_command::GameCycleCommand),
 }
 
-use player_command::{MoveResult, PaintResult, ScanResult, SpawnResult};
+use player_command::{PaintResult, ScanResult, SpawnResult, WalkResult};
 #[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(tag = "type")]
 pub(crate) enum CommandResult {
@@ -19,7 +19,7 @@ pub(crate) enum CommandResult {
     Spawn(SpawnResult),
     Scan(ScanResult),
     Turn,
-    Move(MoveResult),
+    Walk(WalkResult),
     Paint(PaintResult),
 }
 
@@ -47,6 +47,7 @@ impl CommandResponse {
         }
     }
 
+    #[allow(dead_code)]
     pub(crate) fn not_implemented() -> Self {
         CommandResponse {
             result: CommandResult::NotImplemented,
@@ -95,9 +96,9 @@ impl CommandResponse {
         }
     }
 
-    pub(crate) fn r#move(result: MoveResult) -> Self {
+    pub(crate) fn walk(result: WalkResult) -> Self {
         CommandResponse {
-            result: CommandResult::Move(result),
+            result: CommandResult::Walk(result),
             wait: 500,
             mutated: true,
         }

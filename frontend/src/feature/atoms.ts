@@ -4,20 +4,31 @@ import {atom} from "jotai";
 export const gameFieldSizeAtom = atom(30);
 export const foodSizeMaxAtom = atom(3);
 
-export type PaintedCell = {
+type Position = {
     x: number
     y: number
-    color: string
 }
-export const paintedCellsAtom = atom<PaintedCell[]>([]);
+
+export type Paint = {
+    position: Position
+    hue: number
+}
+
+// export type DecoratedCell = {
+//     position: Position
+//     color: string
+// }
+export type DecoratedCellDict = Record<string, string>
+export const decoratedCellsAtom = atom<DecoratedCellDict>({});
+
+
+export type PaintedCellDict = Record<string, string>
+export const paintedCellsAtom = atom<PaintedCellDict>({});
 
 
 export type Food = {
     id: string
-    position: {
-        x: number
-        y: number
-    }
+    position: Position
     size: number
 }
 export const foodsAtom = atom<Food[]>([]);
@@ -28,10 +39,7 @@ export type Crab = {
     hue: number
     point: number
     direction: "N" | "E" | "S" | "W"
-    position: {
-        x: number
-        y: number
-    }
+    position: Position
 }
 export const crabsAtom = atom<Crab[]>([
     // {name: "test001", hue: 370, point: 0, direction: "N", position: {x: 10, y: 10}},

@@ -2,10 +2,11 @@ use crate::command::player_command::SpawnResult;
 use crate::geometry::{Direction, Position, Side};
 use crate::token::Token;
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Crab {
     pub(crate) name: String,
+    #[serde(skip)]
     pub(crate) token: Token,
     pub(crate) hue: f32,
     pub(crate) point: i32,
@@ -33,12 +34,12 @@ impl Crab {
     }
 
     pub(crate) fn get_token(&self) -> Token {
-        self.token.clone()
+        self.token
     }
 
-    pub(crate) fn r#move(&self, side: Side) -> Self {
+    pub(crate) fn walk(&self, side: Side) -> Self {
         Crab {
-            position: self.position.r#move(self.direction, side),
+            position: self.position.walk(self.direction, side),
             ..self.clone()
         }
     }
@@ -49,7 +50,7 @@ impl Crab {
     }
 
     pub(crate) fn move_mut(&mut self, side: Side) {
-        self.position = self.position.r#move(self.direction, side);
+        self.position = self.position.walk(self.direction, side);
     }
 }
 
@@ -97,11 +98,11 @@ mod tests {
             direction: Direction::N,
             position: Position::new(0, 0),
         };
-        let crab_moved_right = crab.r#move(Side::Right);
+        let crab_moved_right = crab.walk(Side::Right);
         assert_eq!(crab_moved_right.direction, Direction::N);
         assert_eq!(crab_moved_right.position, Position::new(1, 0));
         assert!(crab_moved_right.position.is_inset(10, 10));
-        let crab_moved_left = crab.r#move(Side::Left);
+        let crab_moved_left = crab.walk(Side::Left);
         assert_eq!(crab_moved_left.direction, Direction::N);
         assert_eq!(crab_moved_left.position, Position::new(-1, 0));
         assert!(!crab_moved_left.position.is_inset(10, 10));

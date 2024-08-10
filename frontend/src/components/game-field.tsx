@@ -4,12 +4,13 @@ import {useAtomValue} from "jotai";
 import {
     type Crab,
     crabsAtom,
+    decoratedCellsAtom,
     foodsAtom,
     foodSizeMaxAtom,
     gameFieldSizeAtom,
     paintedCellsAtom
 } from "../feature/atoms.ts";
-import {useRandomPaints} from "../feature/use-random-paints.ts";
+import {useDecoration} from "../feature/use-decoration.ts";
 import {useWebSocket} from "../feature/use-websocket.ts";
 
 type GridLineInfo = {
@@ -23,7 +24,7 @@ type GridCellInfo = {
 
 
 function GameField() {
-    useRandomPaints()
+    useDecoration()
     useWebSocket()
     const gameFieldSize = useAtomValue(gameFieldSizeAtom)
     const lines: GridLineInfo[] = range(0, gameFieldSize - 1).map((lineNo) => {
@@ -89,12 +90,13 @@ type GridCellProps = {
 
 function GridCell({lineNo, cellNo}: GridCellProps) {
     const gameFieldSize = useAtomValue(gameFieldSizeAtom)
+    const decoratedCells = useAtomValue(decoratedCellsAtom)
     const paintedCells = useAtomValue(paintedCellsAtom)
-    const color = paintedCells
-        .find(pc => pc.x == cellNo && pc.y == lineNo)
+    const key = `${cellNo},${lineNo}`
+    const color = paintedCells[key] ?? decoratedCells[key]
     const food = useAtomValue(foodsAtom).find((f) => f.position.y == lineNo && f.position.x == cellNo)
     return (
-        <GridCellInner $gameFieldSize={gameFieldSize} style={{backgroundColor: color?.color}}>
+        <GridCellInner $gameFieldSize={gameFieldSize} style={{backgroundColor: color}}>
             {food && (
                 <Food size={food.size}/>
             )}
@@ -190,8 +192,8 @@ function Crab({info}: CrabProps) {
 function crabGeometry(direction: Crab["direction"], x: number, y: number, gameFieldSize: number): CrabGeometry {
     const unit = 80 / gameFieldSize;
     const gap = 10 / gameFieldSize;
-    const left = unit * (x - 1) - gap
-    const top = unit * (y - 1) - gap
+    const left = unit * x - gap
+    const top = unit * y - gap
     const rotate = direction2rotate(direction)
     return {
         left: `${left}vh`,
