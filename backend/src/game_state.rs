@@ -1,5 +1,8 @@
 use crate::command::game_cycle_command::GameCycleCommand;
-use crate::command::player_command::{MoveParam, MoveResult, PlayerCommand, SpawnParam, TurnParam};
+use crate::command::player_command::{
+    MoveParam, MoveResult, PlayerCommand, ScanParam, ScanResult, SpawnParam, TurnParam,
+    WhatYouCanSee,
+};
 use crate::command::{Command, CommandResponse};
 use crate::crab::Crab;
 use crate::food::Food;
@@ -57,6 +60,7 @@ impl GameState {
             PlayerCommand::Spawn(param) => self.spawn(param),
             PlayerCommand::Turn(param) => self.turn(param),
             PlayerCommand::Move(param) => self.r#move(param),
+            PlayerCommand::Scan(param) => self.scan(param),
             // todo: implement other commands
             _ => CommandResponse::not_implemented(),
         }
@@ -120,6 +124,31 @@ impl GameState {
         })
     }
 
+    fn scan(&self, param: &ScanParam) -> CommandResponse {
+        let size = self.size as i32;
+        let Some(crab) = self.find_crab(&param.token) else {
+            return CommandResponse::crab_not_found();
+        };
+        let mut pos = crab.position;
+        let direction = crab.direction;
+        while pos.is_inset(size, size) {
+            pos = pos.forward(direction);
+            if self.find_crab_by_position(&pos).is_some() {
+                return CommandResponse::scan(ScanResult {
+                    what_you_can_see: WhatYouCanSee::Crab,
+                });
+            }
+            if self.foods.iter().any(|f| f.position == pos) {
+                return CommandResponse::scan(ScanResult {
+                    what_you_can_see: WhatYouCanSee::Food,
+                });
+            }
+        }
+        CommandResponse::scan(ScanResult {
+            what_you_can_see: WhatYouCanSee::Wall,
+        })
+    }
+
     fn find_crab_by_position(&self, position: &Position) -> Option<&Crab> {
         self.crabs.iter().find(|c| c.position == *position)
     }
@@ -136,6 +165,7 @@ impl GameState {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::command::player_command::{ScanParam, ScanResult, WhatYouCanSee};
     use crate::command::CommandResult;
     use crate::geometry::{Direction, Side};
 
@@ -143,7 +173,7 @@ mod tests {
     fn test_crab_collides_to_wall() {
         let token = Token::new();
         //  +----+----+
-        //  | 🦀 |    |
+        //  | 🦀 |    |  <- player
         //  +----+----+
         //  |    |    |
         //  +----+----+
@@ -198,6 +228,7 @@ mod tests {
         //  +----+----+----+
         //  |    |    |    |
         //  +----+----+----+
+        //    ^player   ^other
         let mut state = GameState {
             size: 3,
             crabs: vec![
@@ -220,6 +251,8 @@ mod tests {
             ],
             foods: vec![],
         };
+
+        // Act
 
         // 右に一度移動できる
         let command = Command::PlayerCommand(PlayerCommand::Move(MoveParam {
@@ -247,13 +280,28 @@ mod tests {
             })
         );
         assert_eq!(state.crabs[0].position, Position::new(1, 0));
+        // 左に移動できる
+        let command = Command::PlayerCommand(PlayerCommand::Move(MoveParam {
+            token,
+            side: Side::Left,
+        }));
+        let response = state.proc_command(&command);
+        assert_eq!(
+            response.result,
+            CommandResult::Move(MoveResult {
+                success: true,
+                point: 0,
+                total_point: 0,
+            })
+        );
+        assert_eq!(state.crabs[0].position, Position::new(0, 0));
     }
 
     #[test]
     fn test_crab_eats_food() {
         let token = Token::new();
         //  +----+----+
-        //  | 🦀 | 🍙 |
+        //  | 🦀 | 🍙 |  <- player and food
         //  +----+----+
         //  |    |    |
         //  +----+----+
@@ -274,6 +322,8 @@ mod tests {
             }],
         };
 
+        // Act
+
         // 右に一度移動できる
         let command = Command::PlayerCommand(PlayerCommand::Move(MoveParam {
             token,
@@ -291,5 +341,167 @@ mod tests {
         assert_eq!(state.crabs[0].position, Position::new(1, 0));
         assert_eq!(state.crabs[0].point, 1);
         assert_eq!(state.foods.len(), 0);
+    }
+
+    #[test]
+    fn test_crab_turns() {
+        let token = Token::new();
+        //  +----+----+
+        //  |    | 🦀 |  <- player
+        //  +----+----+
+        //  |    |    |
+        //  +----+----+
+        let mut state = GameState {
+            size: 2,
+            crabs: vec![Crab {
+                name: "player".to_string(),
+                token,
+                hue: 0.0,
+                point: 0,
+                direction: Direction::N,
+                position: Position::new(1, 0),
+            }],
+            foods: vec![],
+        };
+
+        // Act
+
+        // 右に旋回
+        let command = Command::PlayerCommand(PlayerCommand::Turn(TurnParam {
+            token,
+            side: Side::Right,
+        }));
+        let response = state.proc_command(&command);
+        assert_eq!(response.result, CommandResult::Turn);
+        assert_eq!(state.crabs[0].direction, Direction::E);
+        assert_eq!(state.crabs[0].position, Position::new(1, 0));
+
+        // 右に移動
+        let command = Command::PlayerCommand(PlayerCommand::Move(MoveParam {
+            token,
+            side: Side::Right,
+        }));
+        let response = state.proc_command(&command);
+        assert_eq!(
+            response.result,
+            CommandResult::Move(MoveResult {
+                success: true,
+                point: 0,
+                total_point: 0,
+            })
+        );
+        assert_eq!(state.crabs[0].direction, Direction::E);
+        assert_eq!(state.crabs[0].position, Position::new(1, 1));
+
+        // 右に旋回(2回目)
+        let command = Command::PlayerCommand(PlayerCommand::Turn(TurnParam {
+            token,
+            side: Side::Right,
+        }));
+        let response = state.proc_command(&command);
+        assert_eq!(response.result, CommandResult::Turn);
+        assert_eq!(state.crabs[0].direction, Direction::S);
+        assert_eq!(state.crabs[0].position, Position::new(1, 1));
+
+        // 右に移動
+        let command = Command::PlayerCommand(PlayerCommand::Move(MoveParam {
+            token,
+            side: Side::Right,
+        }));
+        let response = state.proc_command(&command);
+        assert_eq!(
+            response.result,
+            CommandResult::Move(MoveResult {
+                success: true,
+                point: 0,
+                total_point: 0,
+            })
+        );
+        assert_eq!(state.crabs[0].direction, Direction::S);
+        assert_eq!(state.crabs[0].position, Position::new(0, 1));
+    }
+
+    #[test]
+    fn test_crab_sees_wall_crab_and_food() {
+        let token = Token::new();
+        //  +----+----+----+
+        //  |    | 🍙 | 🦀 |
+        //  +----+----+----+
+        //  |    | 🦀 | 🍙 |
+        //  +----+----+----+
+        //  | 🦀 |    |    |  <- player
+        //  +----+----+----+
+        let mut state = GameState {
+            size: 3,
+            crabs: vec![
+                Crab {
+                    name: "player".to_string(),
+                    token,
+                    hue: 0.0,
+                    point: 0,
+                    direction: Direction::N,
+                    position: Position::new(0, 2),
+                },
+                Crab {
+                    name: "other".to_string(),
+                    token: Token::new(),
+                    hue: 0.0,
+                    point: 0,
+                    direction: Direction::N,
+                    position: Position::new(1, 0),
+                },
+            ],
+            foods: vec![Food {
+                id: Token::new(),
+                position: Position::new(2, 1),
+                size: 1,
+            }],
+        };
+
+        // Act
+
+        // スキャンすると壁が見える
+        let command = Command::PlayerCommand(PlayerCommand::Scan(ScanParam { token }));
+        let response = state.proc_command(&command);
+        assert_eq!(
+            response.result,
+            CommandResult::Scan(ScanResult {
+                what_you_can_see: WhatYouCanSee::Wall
+            })
+        );
+
+        // 右に移動
+        let command = Command::PlayerCommand(PlayerCommand::Move(MoveParam {
+            token,
+            side: Side::Right,
+        }));
+        let _ = state.proc_command(&command);
+
+        // スキャンすると他カニが見える
+        let command = Command::PlayerCommand(PlayerCommand::Scan(ScanParam { token }));
+        let response = state.proc_command(&command);
+        assert_eq!(
+            response.result,
+            CommandResult::Scan(ScanResult {
+                what_you_can_see: WhatYouCanSee::Crab
+            })
+        );
+
+        // 右に移動
+        let command = Command::PlayerCommand(PlayerCommand::Move(MoveParam {
+            token,
+            side: Side::Right,
+        }));
+        let _ = state.proc_command(&command);
+
+        // スキャンするとごはんが見える
+        let command = Command::PlayerCommand(PlayerCommand::Scan(ScanParam { token }));
+        let response = state.proc_command(&command);
+        assert_eq!(
+            response.result,
+            CommandResult::Scan(ScanResult {
+                what_you_can_see: WhatYouCanSee::Food
+            })
+        );
     }
 }
