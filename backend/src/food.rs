@@ -5,9 +5,9 @@ use rand::Rng;
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Food {
-    id: Token,
+    pub id: Token,
     pub position: Position,
-    size: u32,
+    pub size: u32,
 }
 
 impl Food {

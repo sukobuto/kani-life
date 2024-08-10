@@ -107,19 +107,29 @@ impl GameState {
                 total_point: crab.point,
             });
         }
+        let food = self.take_food_by_position(&new_pos);
         let crab = self.find_crab_mut(&param.token).unwrap();
         crab.move_mut(param.side);
-        // todo ごはんがあった場合の処理
+        if let Some(food) = &food {
+            crab.point += food.size as i32;
+        }
         CommandResponse::r#move(MoveResult {
             success: true,
-            // todo ポイントの計算
-            point: 0,
+            point: food.map(|f| f.size as i32).unwrap_or(0),
             total_point: crab.point,
         })
     }
 
     fn find_crab_by_position(&self, position: &Position) -> Option<&Crab> {
         self.crabs.iter().find(|c| c.position == *position)
+    }
+
+    fn take_food_by_position(&mut self, position: &Position) -> Option<Food> {
+        let index = self.foods.iter().position(|f| f.position == *position);
+        if let Some(index) = index {
+            return Some(self.foods.remove(index));
+        }
+        None
     }
 }
 
@@ -237,5 +247,49 @@ mod tests {
             })
         );
         assert_eq!(state.crabs[0].position, Position::new(1, 0));
+    }
+
+    #[test]
+    fn test_crab_eats_food() {
+        let token = Token::new();
+        //  +----+----+
+        //  | 🦀 | 🍙 |
+        //  +----+----+
+        //  |    |    |
+        //  +----+----+
+        let mut state = GameState {
+            size: 2,
+            crabs: vec![Crab {
+                name: "player".to_string(),
+                token,
+                hue: 0.0,
+                point: 0,
+                direction: Direction::N,
+                position: Position::new(0, 0),
+            }],
+            foods: vec![Food {
+                id: Token::new(),
+                position: Position::new(1, 0),
+                size: 1,
+            }],
+        };
+
+        // 右に一度移動できる
+        let command = Command::PlayerCommand(PlayerCommand::Move(MoveParam {
+            token,
+            side: Side::Right,
+        }));
+        let response = state.proc_command(&command);
+        assert_eq!(
+            response.result,
+            CommandResult::Move(MoveResult {
+                success: true,
+                point: 1,
+                total_point: 1,
+            })
+        );
+        assert_eq!(state.crabs[0].position, Position::new(1, 0));
+        assert_eq!(state.crabs[0].point, 1);
+        assert_eq!(state.foods.len(), 0);
     }
 }
