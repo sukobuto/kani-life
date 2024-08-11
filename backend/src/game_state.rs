@@ -69,9 +69,18 @@ impl GameState {
     }
 
     fn spawn(&mut self, param: &SpawnParam) -> CommandResponse {
-        // すでに同じ名前のカニがいる場合はエラー
-        if self.crabs.iter().any(|c| c.name == param.name) {
-            return CommandResponse::crab_already_exists();
+        // すでに同じ名前のカニがいる場合は、同じ名前のカニを除去する
+        // 除去せずエラーとするほうが安全だが、プログラミングハンズオンの性質的にリトライのしやすさを優先する
+        if let Some(index) = self.crabs.iter().position(|c| c.name == param.name) {
+            let old_token = self.crabs[index].get_token();
+            self.crabs.remove(index);
+            // 除去したカニのペイントも削除
+            self.paints = self
+                .paints
+                .iter()
+                .filter(|p| p.crab_token != old_token)
+                .cloned()
+                .collect();
         }
         let keep_out: Vec<Position> = self
             .crabs

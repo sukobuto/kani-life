@@ -15,7 +15,6 @@ pub(crate) enum CommandResult {
     Pong,
     NotImplemented,
     CrabNotFound,
-    CrabAlreadyExists,
     Spawn(SpawnResult),
     Scan(ScanResult),
     Turn,
@@ -59,14 +58,6 @@ impl CommandResponse {
     pub(crate) fn crab_not_found() -> Self {
         CommandResponse {
             result: CommandResult::CrabNotFound,
-            wait: 0,
-            mutated: false,
-        }
-    }
-
-    pub(crate) fn crab_already_exists() -> Self {
-        CommandResponse {
-            result: CommandResult::CrabAlreadyExists,
             wait: 0,
             mutated: false,
         }

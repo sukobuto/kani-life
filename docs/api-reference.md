@@ -1,28 +1,4 @@
-# kani-life
-
-プログラミングハンズオンのためのちょっとしたゲーム
-
-Web 画面はゲーム状況の表示だけで、API でコマンドを送信することで自キャラ（カニ）を操作する。
-
-## dev
-
-backend を起動 (0.0.0.0:8000)
-```
-cd backend
-cargo run
-```
-
-frontend を起動 (起動ポートは標準出力される)
-```
-cd frontend
-npm install
-npm run dev
-```
-
-frontend の起動URLをブラウザで開くとゲーム画面が表示される。
-コマンドは backend に対して直接送信すればOK。
-
-# Player Command API
+# kani-life Player Command API
 
 - Ping サーバーとの接続確認
 - Spawn 自カニを出現させる
@@ -31,7 +7,7 @@ frontend の起動URLをブラウザで開くとゲーム画面が表示され�
 - Walk 左右に1マス移動する
 - Paint 今いるマスを塗る
 
-## API endpoint
+## コマンドAPI
 
 コマンドはすべて共通の API エンドポイントにて送信します。
 
@@ -235,4 +211,3 @@ type Position = {
     - 今までにペイントし、まだ残っているマスの配列です。
 - `totalPoint: number`
     - 現在の合計ポイントです。
-
