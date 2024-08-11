@@ -57,8 +57,6 @@ function GameField() {
     )
 }
 
-type CrabGeometry = { left: string, top: string, transform: string }
-
 const CrabLayer = styled.div`
     position: absolute;
     left: 0;
@@ -149,8 +147,12 @@ function Crab({info}: CrabProps) {
     const highlight = `hsl(${info.hue}deg 72% 52%)`
     return (
         <CrabBase $gameFieldSize={gameFieldSize}
-                  style={crabGeometry(info.direction, info.position.x, info.position.y, gameFieldSize)}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
+                  style={crabPosition(info.position.x, info.position.y, gameFieldSize)}>
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 36 36"
+                style={{transform: `rotate(${direction2rotate(info.direction)}deg)`}}
+            >
                 <path fill={darker}
                       d="M6.96 20.637c.068.639-.543 1.228-1.368 1.315-.824.089-1.547-.357-1.615-.995-.068-.639.544-1.227 1.368-1.314.824-.089 1.547.356 1.615.994zm2.087 2.717c.125.818-1.756 2.544-2.576 2.669-.819.125-1.584-.438-1.708-1.257-.125-.818.58-1.14 1.398-1.265.819-.124 2.761-.965 2.886-.147zm1.783 2.104c.173.81-1.628 3.927-2.438 4.1-.811.173-1.645.146-1.817-.665-.173-.81.306-1.688 1.116-1.861.81-.174 2.966-2.384 3.139-1.574zm3.853.858c.165.811-1.338 4.354-2.15 4.519-.812.165-1.439.451-1.604-.36-.165-.812.261-1.975 1.006-2.58.644-.523 2.584-2.39 2.748-1.579z"/>
                 <path fill={darker}
@@ -185,20 +187,19 @@ function Crab({info}: CrabProps) {
                 <path fill={highlight}
                       d="M10.793 24.433c0-.414 1.782 2.25 7.207 2.25s7.208-2.664 7.208-2.25c0 .414-2.244 3.75-7.208 3.75s-7.207-3.336-7.207-3.75z"/>
             </svg>
+            <CrabInfo style={{color: darker}}>{info.name} {info.point}pt</CrabInfo>
         </CrabBase>
     )
 }
 
-function crabGeometry(direction: Crab["direction"], x: number, y: number, gameFieldSize: number): CrabGeometry {
+function crabPosition(x: number, y: number, gameFieldSize: number): { left: string, top: string } {
     const unit = 80 / gameFieldSize;
     const gap = 10 / gameFieldSize;
     const left = unit * x - gap
     const top = unit * y - gap
-    const rotate = direction2rotate(direction)
     return {
         left: `${left}vh`,
         top: `${top}vh`,
-        transform: `rotate(${rotate}deg)`,
     }
 }
 
@@ -220,6 +221,15 @@ const CrabBase = styled.div<{ $gameFieldSize: number; }>`
     width: ${props => 100 / props.$gameFieldSize}vh;
     height: ${props => 100 / props.$gameFieldSize}vh;
     transition: left 0.6s, top 0.6s;
+`;
+
+const CrabInfo = styled.div`
+    position: absolute;
+    top: 3.2vh;
+    left: 0;
+    font-size: 0.8rem;
+    font-weight: bold;
+    white-space: nowrap;
 `;
 
 export default GameField
