@@ -4,6 +4,8 @@
 
 Web 画面はゲーム状況の表示だけで、API でコマンドを送信することで自キャラ（カニ）を操作する。
 
+![game-image](docs/kani-life.gif)
+
 ## dev
 
 backend を起動 (0.0.0.0:8000)
