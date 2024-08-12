@@ -1,0 +1,28 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "**" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yml"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run lint
+      run: cargo clippy --tests -- -D warnings
+      working-directory: ./backend
+    - name: Build
+      run: cargo build --verbose
+      working-directory: ./backend
+    - name: Run tests
+      run: cargo test --verbose
+      working-directory: ./backend
