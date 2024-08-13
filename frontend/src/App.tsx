@@ -1,6 +1,7 @@
 import './App.css'
 import GameField from "./components/game-field.tsx";
 import {Provider} from "jotai";
+import Bgm from "./components/bgm.tsx";
 
 function App() {
 
@@ -8,6 +9,7 @@ function App() {
         <>
             <Provider>
                 <GameField/>
+                <Bgm/>
             </Provider>
         </>
     )
