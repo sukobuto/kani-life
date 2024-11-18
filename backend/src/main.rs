@@ -4,6 +4,7 @@ mod food;
 mod game_state;
 mod geometry;
 mod paint;
+mod telemetry;
 mod token;
 
 use crate::command::{
@@ -29,6 +30,7 @@ struct GameCommandCase {
     command: Command,
     /// ゲームプロセッサがコマンド送信元に結果を返すためのセンダー
     callback_tx: oneshot::Sender<CommandResponse>,
+    parent_span: tracing::Span,
 }
 
 #[derive(Debug, Clone)]
@@ -39,6 +41,9 @@ struct CommanderState {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let subscriber = telemetry::init_tracing_subscriber("kani_life");
+    tracing::subscriber::set_global_default(subscriber)?;
+
     let (command_tx, command_rx) = mpsc::channel::<GameCommandCase>(100);
 
     let game_state = Arc::new(Mutex::new(game_state::GameState::new(30)));
@@ -84,6 +89,10 @@ async fn post_command(
     State(state): State<Arc<Mutex<CommanderState>>>,
     Json(command): Json<PlayerCommand>,
 ) -> Result<Json<command::CommandResult>, StatusCode> {
+    // parent: None にしないと comand_processor の span が親になってしまう
+    let root =
+        tracing::span!(parent: None, tracing::Level::TRACE, "post_command", command = ?command);
+    let _enter = root.enter();
     println!("Posted command: {:?}", command);
     let (response_tx, response_rx) = oneshot::channel::<CommandResponse>();
     let command_tx = state.lock().await.tx.clone();
@@ -91,6 +100,7 @@ async fn post_command(
         .send(GameCommandCase {
             command: Command::PlayerCommand(command),
             callback_tx: response_tx,
+            parent_span: root.clone(),
         })
         .await;
     if let Err(e) = send_result {
@@ -124,8 +134,15 @@ fn command_processor(
         while let Some(GameCommandCase {
             command,
             callback_tx,
+            parent_span,
         }) = command_rx.recv().await
         {
+            let root = tracing::span!(
+                parent: &parent_span,
+                tracing::Level::TRACE,
+                "command_processor",
+            );
+            let _enter = root.enter();
             let mut state = game_state.lock().await;
             let response = state.proc_command(&command);
             let mutated = response.mutated;
@@ -145,12 +162,15 @@ fn game_cycle(command_tx: mpsc::Sender<GameCommandCase>) {
     // food loop
     tokio::spawn(async move {
         loop {
+            let root = tracing::span!(parent:None, tracing::Level::TRACE, "game_cycle");
+            let _enter = root.enter();
             let command = Command::GameCycleCommand(GameCycleCommand::SpawnFood);
             let (response_tx, response_rx) = oneshot::channel::<CommandResponse>();
             let send_result = command_tx
                 .send(GameCommandCase {
                     command,
                     callback_tx: response_tx,
+                    parent_span: root.clone(),
                 })
                 .await;
             if let Err(e) = send_result {

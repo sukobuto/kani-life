@@ -29,11 +29,14 @@ impl GameState {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub(crate) fn proc_command(&mut self, command: &Command) -> CommandResponse {
-        match command {
+        let res = match command {
             Command::PlayerCommand(command) => self.proc_player_command(command),
             Command::GameCycleCommand(command) => self.proc_game_cycle_command(command),
-        }
+        };
+        tracing::event!(tracing::Level::INFO, ?res);
+        res
     }
 
     fn proc_game_cycle_command(&mut self, command: &GameCycleCommand) -> CommandResponse {
@@ -42,6 +45,7 @@ impl GameState {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     fn spawn_food(&mut self) -> CommandResponse {
         if self.foods.len() >= 5 {
             return CommandResponse::ok(100, false);
@@ -68,6 +72,7 @@ impl GameState {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     fn spawn(&mut self, param: &SpawnParam) -> CommandResponse {
         // すでに同じ名前のカニがいる場合は、同じ名前のカニを除去する
         // 除去せずエラーとするほうが安全だが、プログラミングハンズオンの性質的にリトライのしやすさを優先する
@@ -101,6 +106,7 @@ impl GameState {
         self.crabs.iter().find(|c| c.get_token() == *token)
     }
 
+    #[tracing::instrument(skip(self))]
     fn turn(&mut self, param: &TurnParam) -> CommandResponse {
         let Some(crab) = self.find_crab_mut(&param.token) else {
             return CommandResponse::crab_not_found();
@@ -109,6 +115,7 @@ impl GameState {
         CommandResponse::turn()
     }
 
+    #[tracing::instrument(skip(self))]
     fn walk(&mut self, param: &WalkParam) -> CommandResponse {
         let size = self.size as i32;
         let Some(crab) = self.find_crab(&param.token) else {
@@ -135,6 +142,7 @@ impl GameState {
         })
     }
 
+    #[tracing::instrument(skip(self))]
     fn scan(&self, param: &ScanParam) -> CommandResponse {
         let size = self.size as i32;
         let Some(crab) = self.find_crab(&param.token) else {
@@ -160,6 +168,7 @@ impl GameState {
         })
     }
 
+    #[tracing::instrument(skip(self))]
     fn paint(&mut self, param: &PaintParam) -> CommandResponse {
         let Some(crab) = self.find_crab(&param.token) else {
             return CommandResponse::crab_not_found();
