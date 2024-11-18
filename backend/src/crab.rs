@@ -37,6 +37,11 @@ impl Crab {
         self.token
     }
 
+    // 上記メソッドの mut 版
+    pub(crate) fn turn_mut(&mut self, side: Side) {
+        self.direction = self.direction.turn(side);
+    }
+
     pub(crate) fn walk(&self, side: Side) -> Self {
         Crab {
             position: self.position.walk(self.direction, side),
@@ -44,12 +49,7 @@ impl Crab {
         }
     }
 
-    // 上記メソッドの mut 版
-    pub(crate) fn turn_mut(&mut self, side: Side) {
-        self.direction = self.direction.turn(side);
-    }
-
-    pub(crate) fn move_mut(&mut self, side: Side) {
+    pub(crate) fn walk_mut(&mut self, side: Side) {
         self.position = self.position.walk(self.direction, side);
     }
 }

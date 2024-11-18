@@ -124,7 +124,7 @@ impl GameState {
         }
         let food = self.take_food_by_position(&new_pos);
         let crab = self.find_crab_mut(&param.token).unwrap();
-        crab.move_mut(param.side);
+        crab.walk_mut(param.side);
         if let Some(food) = &food {
             crab.point += food.size as i32;
         }
